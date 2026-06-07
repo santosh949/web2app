@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { HeroSection } from './components/HeroSection';
 import { MainAppSection } from './components/MainAppSection';

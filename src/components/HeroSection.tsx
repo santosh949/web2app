@@ -54,7 +54,7 @@ export function HeroSection({ onStartClick }: HeroSectionProps) {
   };
   const wordVariants = {
     hidden: { opacity: 0, y: 60 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
   };
 
   // Effect 3: Magnetic Button

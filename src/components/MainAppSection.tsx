@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link2, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { validateUrl } from '../lib/validateUrl';
 
 const placeholders = ["https://stripe.com", "https://notion.so", "https://linear.app"];
 
-export const MainAppSection = React.forwardRef<HTMLDivElement>((props, ref) => {
+export const MainAppSection = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
