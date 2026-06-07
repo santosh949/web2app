@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, Download, ExternalLink, RefreshCw, LayoutDashboard } from 'lucide-react';
-import { generateZip } from '../lib/generateZip';
+import { CheckCircle, ExternalLink, RefreshCw, LayoutDashboard, Copy, Check } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export function Result() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
   
   // Read state from previous page
   const state = location.state as {
@@ -13,31 +15,21 @@ export function Result() {
     url: string;
     themeColor: string;
     iconBase64: string | null;
+    installUrl: string;
   };
 
   // Redirect if accessed directly without state
-  if (!state || !state.appName) {
+  if (!state || !state.appName || !state.installUrl) {
     navigate('/');
     return null;
   }
 
-  const { appName, url, themeColor, iconBase64 } = state;
+  const { appName, url, themeColor, installUrl } = state;
 
-  const handleDownloadAgain = async () => {
-    try {
-      const zipBlob = await generateZip({ appName, url, themeColor, iconBase64 });
-      const objectUrl = URL.createObjectURL(zipBlob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = `${appName.toLowerCase().replace(/\s+/g, '-')}-pwa.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
-    } catch (err) {
-      console.error("Failed to generate ZIP", err);
-      alert("Failed to generate ZIP. Please try again.");
-    }
+  const handleCopy = () => {
+    navigator.clipboard.writeText(installUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handlePwaBuilder = () => {
@@ -45,10 +37,10 @@ export function Result() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-900 text-slate-50 flex items-center justify-center py-12 px-6 relative overflow-hidden">
       {/* Background glow based on theme color */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-[150px] opacity-10 rounded-full pointer-events-none"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] blur-[150px] opacity-10 rounded-full pointer-events-none"
         style={{ backgroundColor: themeColor }}
       />
 
@@ -71,12 +63,24 @@ export function Result() {
         <p className="text-slate-400 text-lg mb-10 font-mono truncate px-4">{url}</p>
 
         <div className="flex flex-col gap-4 mb-10">
+          {/* Live Link Box */}
+          <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3 overflow-hidden shadow-inner">
+            <span className="font-mono text-cyan-400 text-sm truncate text-left">{installUrl}</span>
+            <button 
+              onClick={handleCopy}
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors shrink-0"
+              title="Copy Link"
+            >
+              {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-slate-300" />}
+            </button>
+          </div>
+
           <button
-            onClick={handleDownloadAgain}
+            onClick={() => window.open(installUrl, '_blank')}
             className="w-full py-4 bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl flex items-center justify-center gap-3 font-semibold transition-colors text-lg"
           >
-            <Download className="w-5 h-5" />
-            Download ZIP Again
+            Open Install Page
+            <ExternalLink className="w-5 h-5" />
           </button>
           
           <button
@@ -87,6 +91,16 @@ export function Result() {
             Generate APK (Free)
             <ExternalLink className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* QR Code Section */}
+        <div className="flex flex-col items-center justify-center mb-10">
+          <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block mb-3 border-[6px] border-slate-800">
+            <QRCodeSVG value={installUrl} size={180} />
+          </div>
+          <p className="text-slate-400 font-medium text-sm">
+            Scan to install on your phone
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 border-t border-white/10 pt-8 mb-8">

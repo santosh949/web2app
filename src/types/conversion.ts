@@ -5,4 +5,6 @@ export interface Conversion {
   themeColor: string
   iconBase64: string | null
   createdAt: string
+  installUrl?: string
+  folderPath?: string
 }

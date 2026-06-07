@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Upload, Type, Palette, Smartphone, Loader2, AlertCircle } from 'lucide-react';
 import { validateUrl } from '../lib/validateUrl';
-import { generateZip } from '../lib/generateZip';
+import { uploadPWA } from '../lib/uploadPWA';
 import { saveConversion } from '../lib/storage';
 
 export function Convert() {
@@ -78,17 +78,7 @@ export function Convert() {
         iconBase64
       };
 
-      const zipBlob = await generateZip(config);
-      
-      // Trigger download
-      const objectUrl = URL.createObjectURL(zipBlob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = `${appName.toLowerCase().replace(/\s+/g, '-')}-pwa.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
+      const { installUrl, folderPath } = await uploadPWA(config);
 
       // Save to history
       const conversionId = crypto.randomUUID();
@@ -98,12 +88,14 @@ export function Convert() {
         appName,
         themeColor,
         iconBase64,
+        installUrl,
+        folderPath,
         createdAt: new Date().toISOString()
       });
 
       // Navigate to result
       navigate('/result', { 
-        state: { appName, url: fullUrl, themeColor, iconBase64 } 
+        state: { appName, url: fullUrl, themeColor, iconBase64, installUrl } 
       });
 
     } catch (err: any) {
